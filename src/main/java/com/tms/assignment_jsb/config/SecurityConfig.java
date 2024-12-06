@@ -16,6 +16,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.tms.assignment_jsb.entity.Accounts;
+import com.tms.assignment_jsb.repository.AccountsRepository;
 import com.tms.assignment_jsb.repository.UserGroupsRepository;
 import com.tms.assignment_jsb.service.AppUserDetailsService;
 import com.tms.assignment_jsb.service.JwtService;
@@ -37,6 +39,11 @@ public class SecurityConfig {
   @Autowired
   private UserGroupsRepository userGroupsRepository;
 
+  @Autowired
+  private AccountsRepository accountsRepository;
+
+
+
   @Bean
   BCryptPasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -56,7 +63,7 @@ public class SecurityConfig {
 
   @Bean
   JwtAuthenticationFilter jwtAuthenticationFilter() {
-      return new JwtAuthenticationFilter(jwtService, appUserDetailsService, userGroupsRepository);
+      return new JwtAuthenticationFilter(jwtService, appUserDetailsService, userGroupsRepository, accountsRepository);
   }
 
   @Bean
@@ -78,9 +85,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-              .requestMatchers("/login").permitAll()
+              .requestMatchers("/login", "logout1").permitAll()
               .requestMatchers("/landing", "/profile", "/updateEmail", "/updatePw").authenticated()
               .requestMatchers("/getUsersInfo", "createGrp", "/createUser", "/update").authenticated()
+              .requestMatchers("/getAppsInfo", "/createApp", "/updateApp", "getPlansInfo", "/createPlan", "/getTasksInfo", "/taskCreation", "updateTask").authenticated()
               .anyRequest().authenticated()
             )
             .logout(logout -> logout

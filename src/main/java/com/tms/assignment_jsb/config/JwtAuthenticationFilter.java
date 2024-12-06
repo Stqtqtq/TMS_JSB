@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.tms.assignment_jsb.entity.Accounts;
+import com.tms.assignment_jsb.repository.AccountsRepository;
 import com.tms.assignment_jsb.repository.UserGroupsRepository;
 import com.tms.assignment_jsb.service.AppUserDetailsService;
 import com.tms.assignment_jsb.service.JwtService;
@@ -27,11 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
   // private final AccountsRepository accountsRepository;
   private final AppUserDetailsService appUserDetailsService;
   private final UserGroupsRepository userGroupsRepository;
+  private final AccountsRepository accountsRepository;
 
-  public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService appUserDetailsService, UserGroupsRepository userGroupsRepository) {
+  public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService appUserDetailsService, UserGroupsRepository userGroupsRepository, AccountsRepository accountsRepository) {
     this.jwtService = jwtService;
     this.appUserDetailsService = appUserDetailsService;
     this.userGroupsRepository = userGroupsRepository;
+    this.accountsRepository = accountsRepository;
   }
 
   @Override
@@ -59,6 +63,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
                     // Dynamically check if the user is an admin
                     boolean isAdmin = userGroupsRepository.findByUsernameAndGroupname(username, "Admin").isPresent();
                     request.setAttribute("isAdmin", isAdmin);
+
+                    Integer isActive = accountsRepository.findIsActiveByUsername(username);
+                    System.out.println("checking activity " + isActive);
+                    request.setAttribute("inactiveAccount", isActive == 0 );
+
+                    // Integer isActive = accounts.getIsActive();
+                    // request.setAttribute("inactiveAccount", isActive == 0);
 
                     // Check if the user belongs to the "PL" group
                     boolean isPL = userGroupsRepository.findByUsernameAndGroupname(username, "PL").isPresent();

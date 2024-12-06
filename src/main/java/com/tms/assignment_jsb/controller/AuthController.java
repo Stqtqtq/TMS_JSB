@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     if (user.getIsActive() != 1) {
-      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive. Please contact an administrator."));
+      return ResponseEntity.status(401).body(Map.of("message", "Invalid username or password"));
     }
 
     String ipAddress = loginRequest.getOrDefault("ipAddress", "unknown");

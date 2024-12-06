@@ -15,4 +15,13 @@ public interface AccountsRepository extends JpaRepository<Accounts, String>{
 
   @Query("SELECT a.email FROM Accounts a WHERE a.username = :username")
   Optional<String> findEmailByUsername(String username);
+
+  // @Query("SELECT a.isActive FROM Accounts a WHERE a.username = :username")
+  // Optional<Boolean> findIsActiveByUsername(String username);
+
+      // @Query("SELECT CASE WHEN a.isActive = 1 THEN true ELSE false END FROM Accounts a WHERE a.username = :username")
+      @Query("SELECT a.isActive FROM Accounts a WHERE a.username = :username")
+    Integer findIsActiveByUsername(String username);
+
+
 }

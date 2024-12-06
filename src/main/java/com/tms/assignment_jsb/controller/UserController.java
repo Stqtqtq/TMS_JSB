@@ -22,6 +22,9 @@ import com.tms.assignment_jsb.repository.UserGroupsRepository;
 import com.tms.assignment_jsb.service.UserGroupsService;
 import com.tms.assignment_jsb.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 @Controller
 public class UserController {
   
@@ -37,10 +40,19 @@ public class UserController {
   @Autowired
   private UserGroupsService userGroupsService;
 
+  @Autowired
+  private AuthController authController;
+
   @GetMapping("/getUsersInfo")
-  public ResponseEntity<?> getUsersInfo(@RequestAttribute(name = "isAdmin", required = false) boolean isAdmin) {
+  public ResponseEntity<?> getUsersInfo(@RequestAttribute(name = "isAdmin", required = false) boolean isAdmin, @RequestAttribute(name = "inactiveAccount", required = true) boolean inactiveAccount, HttpServletResponse response, HttpServletRequest request) {
     if (!isAdmin) {
       return ResponseEntity.status(403).body(Map.of("message", "Forbidden", "success", false));
+    }
+
+    System.out.println("inactive account " + inactiveAccount);
+    if (inactiveAccount) {
+      authController.logout(response, request);
+      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive", "inactiveAccount", inactiveAccount));
     }
 
     try {

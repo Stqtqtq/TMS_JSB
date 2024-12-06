@@ -143,34 +143,35 @@ public class TaskService {
         // Save task
     Task updatedTask = taskRepository.save(task);
 
+    // Fetch the application record to determine the permit group dynamically
+    Optional<Application> optionalApp = applicationRepository.findByTaskId(taskId);
+    if (optionalApp.isEmpty()) {
+        throw new IllegalArgumentException("Application not found for task ID: " + taskId);
+    }
+    Application application = optionalApp.get();
+
+    // Determine the permit group field dynamically
+    String permitGroup = getPermitGroupByState(application, taskState);
+    if (permitGroup == null || permitGroup.isEmpty()) {
+        throw new IllegalArgumentException("No permit group defined for state: " + taskState);
+    }
+
+    // Check if the current user belongs to the permit group
+    boolean userHasPermission = userGroupsRepository.existsById_UsernameAndId_Groupname(currentUser, permitGroup);
+    if (!userHasPermission) {
+        throw new IllegalArgumentException("Current user does not have permission for state: " + taskState);
+    }
+
     // Check if updating from 'Doing' -> 'Done' state, send email
     if ("promote".equals(action) && "Done".equals(newTaskState)) {
-        sendApprovalEmail(taskId, newTaskState, currentUser);
+        sendApprovalEmail(permitGroup, taskId, taskState);
     }
 
         return updatedTask;
     }
 
-    private void sendApprovalEmail(String taskId, String taskState, String currentUser) {
+    private void sendApprovalEmail(String permitGroup, String taskId, String taskState) {
         try {
-            // Fetch the application record to determine the permit group dynamically
-            Optional<Application> optionalApp = applicationRepository.findByTaskId(taskId);
-            if (optionalApp.isEmpty()) {
-                throw new IllegalArgumentException("Application not found for task ID: " + taskId);
-            }
-            Application application = optionalApp.get();
-
-            // Determine the permit group field dynamically
-            String permitGroup = getPermitGroupByState(application, taskState);
-            if (permitGroup == null || permitGroup.isEmpty()) {
-                throw new IllegalArgumentException("No permit group defined for state: " + taskState);
-            }
-
-            // Check if the current user belongs to the permit group
-            boolean userHasPermission = userGroupsRepository.existsById_UsernameAndId_Groupname(currentUser, permitGroup);
-            if (!userHasPermission) {
-                throw new IllegalArgumentException("Current user does not have permission for state: " + taskState);
-            }
 
             // Fetch users in the permit group
             List<String> recipientUsernames = userGroupsRepository.findUsernameByGroupname(permitGroup);
