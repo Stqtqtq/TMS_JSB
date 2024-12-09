@@ -89,9 +89,20 @@ public class UserController {
   }
 
   @PostMapping("/createGrp")
-  public ResponseEntity<?> createGroup(@RequestBody Map<String, String> request, @RequestAttribute("isAdmin") boolean isAdmin) {
+  public ResponseEntity<?> createGroup(@RequestBody Map<String, String> request, 
+                                        HttpServletResponse res,
+                                        HttpServletRequest req,
+                                        @RequestAttribute("isAdmin") boolean isAdmin,
+                                        @RequestAttribute(name = "inactiveAccount", required = true) boolean inactiveAccount) 
+  {
+  
     if (!isAdmin) {
       return ResponseEntity.status(403).body(Map.of("message", "Forbidden", "success", false));
+    }
+
+    if (inactiveAccount) {
+      authController.logout(res, req);
+      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive", "inactiveAccount", inactiveAccount));
     }
 
     String groupName = request.get("groupname");
@@ -121,9 +132,19 @@ public class UserController {
   }
 
   @PostMapping("/createUser")
-  public ResponseEntity<?> createUser(@RequestBody Map<String, Object> request, @RequestAttribute("isAdmin") boolean isAdmin) {
+  public ResponseEntity<?> createUser(@RequestBody Map<String, Object> request,
+                                        HttpServletResponse res,
+                                        HttpServletRequest req,
+                                        @RequestAttribute("isAdmin") boolean isAdmin,
+                                        @RequestAttribute(name = "inactiveAccount", required = true) boolean inactiveAccount) {
+
     if (!isAdmin) {
       return ResponseEntity.status(403).body(Map.of("message", "Forbidden", "success", false));
+    }
+
+    if (inactiveAccount) {
+      authController.logout(res, req);
+      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive", "inactiveAccount", inactiveAccount));
     }
 
     // Extract request fields
@@ -162,9 +183,20 @@ public class UserController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<?> updateUser(@RequestBody Map<String, Object> request, @RequestAttribute("isAdmin") boolean isAdmin) {
+  public ResponseEntity<?> updateUser(@RequestBody Map<String, Object> request, 
+                                        HttpServletResponse res,
+                                        HttpServletRequest req,
+                                        @RequestAttribute("isAdmin") boolean isAdmin,
+                                        @RequestAttribute(name = "inactiveAccount", required = true) boolean inactiveAccount) 
+  {
+
     if (!isAdmin) {
       return ResponseEntity.status(403).body(Map.of("message", "Forbidden", "success", false));
+    }
+
+    if (inactiveAccount) {
+      authController.logout(res, req);
+      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive", "inactiveAccount", inactiveAccount));
     }
 
     // Extract request fields

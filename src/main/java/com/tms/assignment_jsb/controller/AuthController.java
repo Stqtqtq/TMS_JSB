@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
@@ -93,7 +94,13 @@ public class AuthController {
   } 
 
   @GetMapping("/landing")
-  public ResponseEntity<?> landing(HttpServletRequest request) {
+  public ResponseEntity<?> landing(HttpServletResponse response, HttpServletRequest request, @RequestAttribute(name = "inactiveAccount", required = true) boolean inactiveAccount) {
+
+    if (inactiveAccount) {
+      logout(response, request);
+      return ResponseEntity.status(401).body(Map.of("message", "Account is inactive", "inactiveAccount", inactiveAccount));
+    }
+
     try {
       // Retrieve the token from the cookie
       String token = null;
